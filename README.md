@@ -4,6 +4,8 @@ Shader GLSL criado para replicar o efeito visual tradicional do **Suminagashi** 
 
 Visual minimalista em tons monocromáticos, com linhas onduladas animadas que evocam a fluidez da tinta flutuando na superfície.
 
+![Frame do shader em t = 30 s](preview.jpg)
+
 ## 🌐 Demonstração ao vivo
 
 Você pode visualizar e interagir com o shader diretamente no Shadertoy:
@@ -62,3 +64,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 - Adicionar controle de paleta de cores (versões coloridas).
 - Controle interativo de parâmetros (amplitude, iterações, tempo).
 - Suporte a movimento do mouse para distorção dinâmica.
+
+## 📄 Licença
+
+[MIT](LICENSE)
