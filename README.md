@@ -1,70 +1,57 @@
-# 🎨 shader-suminagashi
+# Suminagashi Shader
 
-Shader GLSL criado para replicar o efeito visual tradicional do **Suminagashi** (墨流し) — a arte japonesa de pintura sobre a água.
+![GLSL](https://img.shields.io/badge/GLSL-shader-5586A4?logo=opengl&logoColor=white)
+![WebGL 2](https://img.shields.io/badge/WebGL-2-990000?logo=webgl&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-Visual minimalista em tons monocromáticos, com linhas onduladas animadas que evocam a fluidez da tinta flutuando na superfície.
+A procedural GLSL fragment shader that recreates **Suminagashi** (墨流し), the Japanese art
+of marbling ink on water. Minimal and monochrome, with animated wavy lines that mimic ink
+drifting on the surface.
 
-![Frame do shader em t = 30 s](preview.jpg)
+![Frame of the shader at t = 30 s](assets/preview.jpg)
 
-## 🌐 Demonstração ao vivo
+**Live demo:** [Shadertoy](https://www.shadertoy.com/view/tXdXWH) · or run it locally with
+the standalone [`index.html`](index.html) (see below).
 
-Você pode visualizar e interagir com o shader diretamente no Shadertoy:
+## How it works
 
-🔗 [Visualizar shader no Shadertoy](https://www.shadertoy.com/view/tXdXWH)
+All the work happens in [`shader.glsl`](shader.glsl), a single `mainImage` function in the
+Shadertoy format:
 
-Ou incorporar em uma página HTML com o seguinte snippet:
-
-```html
-<iframe width="640" height="360" frameborder="0"
-  src="https://www.shadertoy.com/embed/tXdXWH?gui=true&t=10&paused=true&muted=false"
-  allowfullscreen></iframe>
-```
-
-## 🧠 Como funciona
-
-O shader aplica múltiplas distorções senoidais sobre coordenadas UV normalizadas, simulando os padrões fluidos e caóticos do Suminagashi. Os principais elementos da lógica são:
-
-- **Distorções harmônicas:** loops com funções `cos` modificando `uv.x` e `uv.y` de forma recursiva para criar linhas onduladas.
-- **Animação temporal:** uso do `iTime` para gerar movimento suave ao longo do tempo.
-- **Escala de cinza:** intensidade da cor é calculada com base em `sin()` invertido, para produzir um contraste suave e orgânico.
-- **Foco em estética minimalista:** nenhuma cor além do branco, preto e tons de cinza.
-
-## 📄 Código-fonte principal
+- **Harmonic domain warping:** 30 iterations of `cos` offsets feed `uv.x` into `uv.y` and
+  back again. Each pass adds a finer, weaker ripple (amplitude `0.5 / i`), which produces the
+  nested, ink-like curves.
+- **Animation:** `iTime` shifts the phase of every ripple, so the pattern flows slowly
+  instead of jumping.
+- **Shading:** brightness is `1 - |sin(t - uv.x - uv.y)|`, giving soft grayscale bands with no
+  color, only black, white and gray.
 
 ```glsl
-void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-    vec2 uv = (2.0 * fragCoord - iResolution.xy) / min(iResolution.x, iResolution.y);
-    float scaledTime = iTime / 12.0;
-
-    float baseGray = 1.0;
-    float iteration = 30.0;
-
-    for(float i = 1.0; i < iteration; i++) {
-        float freqX = 4.0;
-        float freqY = 3.0;
-        float amp = 0.5;
-
-        uv.x += amp / i * cos(i * freqX * uv.y + scaledTime);
-        uv.y += amp / i * cos(i * freqY * uv.x + scaledTime);
-    }
-
-    float brightness = 1.0 - abs(sin(scaledTime - uv.x - uv.y));
-    fragColor = vec4(vec3(baseGray * brightness), 1.0);
+for (float i = 1.0; i < 30.0; i++) {
+    uv.x += 0.5 / i * cos(i * 4.0 * uv.y + t);
+    uv.y += 0.5 / i * cos(i * 3.0 * uv.x + t);
 }
+float brightness = 1.0 - abs(sin(t - uv.x - uv.y));
 ```
 
-## 📦 Recursos utilizados
+## Running locally
 
-- [Shadertoy](https://www.shadertoy.com/) — plataforma de testes e visualização de shaders GLSL.
-- GLSL (OpenGL Shading Language)
-- Estética inspirada em arte tradicional japonesa.
+`index.html` is a ~90-line WebGL 2 runner that loads `shader.glsl` unchanged and supplies
+the `iResolution` and `iTime` uniforms, so no Shadertoy account is needed:
 
-## 🚧 Melhorias futuras
+```bash
+python -m http.server 8000   # then open http://localhost:8000
+```
 
-- Adicionar controle de paleta de cores (versões coloridas).
-- Controle interativo de parâmetros (amplitude, iterações, tempo).
-- Suporte a movimento do mouse para distorção dinâmica.
+It also works as-is on GitHub Pages. To embed the Shadertoy version in another page, use the
+iframe snippet in [`assets/shadertoy-embed.html`](assets/shadertoy-embed.html).
 
-## 📄 Licença
+## Ideas for next steps
+
+- Color palettes (sumi ink over colored paper).
+- Interactive controls for amplitude, frequency and iteration count.
+- Mouse-driven distortion, like dragging a brush through the water.
+
+## License
 
 [MIT](LICENSE)
